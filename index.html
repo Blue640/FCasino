@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FCasino | Elite Responsive</title>
+    <title>FCasino | Midnight Industrial</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -11,197 +11,244 @@
 
     <style>
         :root {
-            --gold: linear-gradient(180deg, #ffdc6a 0%, #a67c00 100%);
-            --deep-blue: #020617;
-            --neon-border: #1e293b;
-            --panel-bg: #0f172a;
+            --bg-dark: #05070a;
+            --panel-bg: #0f1115;
+            --neon-blue: #00d2ff;
+            --border-color: #1f2937;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background-color: var(--deep-blue);
-            color: #f8fafc;
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-dark);
+            color: #e5e7eb;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
             margin: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            padding: 10px;
-            overflow: hidden;
+            padding: 15px;
+            /* Легкий эффект шума для реализма */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
         }
 
-        .casino-container {
+        .casino-machine {
             width: 100%;
-            max-width: 500px;
+            max-width: 440px;
             background: var(--panel-bg);
-            border: 2px solid var(--neon-border);
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.05);
             position: relative;
         }
 
-        /* Шапка */
-        .top-bar {
+        /* Индустриальные элементы (заклепки) */
+        .casino-machine::before, .casino-machine::after {
+            content: '•';
+            position: absolute;
+            color: #374151;
+            font-size: 10px;
+            top: 10px;
+        }
+        .casino-machine::before { left: 10px; }
+        .casino-machine::after { right: 10px; }
+
+        .top-info {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-end;
             margin-bottom: 20px;
-            font-family: 'Courier New', monospace;
         }
 
-        .balance-display {
-            background: rgba(0,0,0,0.3);
-            padding: 5px 12px;
-            border-radius: 8px;
-            border: 1px solid #334155;
-            color: #fbbf24;
-            font-weight: bold;
-            font-size: 0.9rem;
+        .brand {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
         }
 
-        /* Визуальный блок слотов */
-        .slot-window {
+        .balance-box {
+            font-family: 'JetBrains Mono', monospace;
             background: #000;
-            height: 180px;
-            border-radius: 12px;
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: 1px solid #2d3748;
+            color: #10b981;
+        }
+
+        /* Окно барабанов */
+        .slot-viewport {
+            background: #000;
+            height: 160px;
+            border-radius: 8px;
             display: flex;
-            gap: 8px;
-            padding: 10px;
-            border: 4px solid #1e293b;
+            gap: 4px;
+            padding: 8px;
+            border: 1px solid #2d3748;
             position: relative;
             overflow: hidden;
-            box-shadow: inset 0 0 30px #000;
+            box-shadow: inset 0 0 40px rgba(0,0,0,1);
         }
 
-        /* Стекло поверх барабанов */
-        .glass-effect {
+        /* Реалистичный блик стекла */
+        .glass-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(180deg, 
-                rgba(0,0,0,0.7) 0%, 
-                transparent 20%, 
-                transparent 80%, 
-                rgba(0,0,0,0.7) 100%);
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 40%, rgba(255,255,255,0.02) 100%);
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        /* Затемнение сверху и снизу (эффект глубины) */
+        .slot-viewport::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(180deg, #000 0%, transparent 20%, transparent 80%, #000 100%);
             z-index: 5;
             pointer-events: none;
         }
 
-        .reel-col {
+        .reel-unit {
             flex: 1;
             height: 100%;
             position: relative;
         }
 
-        .reel-track {
+        .reel-strip {
             display: flex;
             flex-direction: column;
             align-items: center;
-            transition: transform 3.5s cubic-bezier(0.2, 0, 0.1, 1.1); /* Эффект инерции */
+            transition: transform 3.5s cubic-bezier(0.2, 0, 0, 1.05);
         }
 
-        /* Оформление иконок */
-        .icon-box {
-            height: 140px;
+        .icon-wrap {
+            height: 120px;
             width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 10px;
-        }
-
-        .icon-box svg {
-            width: 80%;
-            height: 80%;
-            filter: drop-shadow(0 0 10px rgba(255,255,255,0.1));
-        }
-
-        /* Управление */
-        .ui-panel {
-            margin-top: 25px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .input-wrapper {
-            position: relative;
-            width: 100%;
-        }
-
-        input[type="number"] {
-            width: 100%;
-            background: #020617;
-            border: 2px solid #334155;
-            color: #fff;
             padding: 15px;
-            border-radius: 12px;
+            flex-shrink: 0;
+        }
+
+        .icon-wrap svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+        }
+
+        /* Кнопки и ввод */
+        .bottom-ui {
+            margin-top: 24px;
+            display: grid;
+            grid-template-columns: 1fr 120px;
+            gap: 12px;
+        }
+
+        .bet-control {
+            background: #000;
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .bet-control label {
+            position: absolute;
+            top: 6px; left: 10px;
+            font-size: 9px;
+            text-transform: uppercase;
+            color: #4b5563;
+        }
+
+        input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #fff;
+            padding: 22px 10px 8px 10px;
             font-size: 1.2rem;
-            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
             outline: none;
         }
 
-        .btn-spin {
-            background: var(--gold);
-            color: #000;
-            border: none;
-            padding: 18px;
-            border-radius: 12px;
-            font-size: 1.4rem;
-            font-weight: 900;
+        .btn-pull {
+            background: #111827;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            border-radius: 8px;
+            font-weight: 800;
             text-transform: uppercase;
             cursor: pointer;
-            box-shadow: 0 6px 0 #78350f;
-            transition: all 0.1s;
+            transition: all 0.2s;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.1);
         }
 
-        .btn-spin:active {
-            transform: translateY(4px);
-            box-shadow: 0 2px 0 #78350f;
+        .btn-pull:hover {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
         }
 
-        .btn-spin:disabled {
-            filter: grayscale(1);
-            opacity: 0.6;
+        .btn-pull:active {
+            transform: scale(0.96);
+        }
+
+        .btn-pull:disabled {
+            border-color: #374151;
+            color: #374151;
+            background: #0f1115;
             cursor: not-allowed;
+            box-shadow: none;
         }
 
-        /* Адаптивность под мобилки */
-        @media (max-width: 400px) {
-            .slot-window { height: 140px; }
-            .icon-box { height: 110px; }
-            .casino-container { padding: 15px; }
+        #statusText {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 11px;
+            letter-spacing: 1px;
+            color: #4b5563;
+            text-transform: uppercase;
+        }
+
+        /* Адаптив */
+        @media (max-width: 420px) {
+            .slot-viewport { height: 130px; }
+            .icon-wrap { height: 100px; }
+            .casino-machine { padding: 18px; }
         }
     </style>
 </head>
 <body>
 
-<div class="casino-container">
-    <div class="top-bar">
-        <span style="font-weight: bold; font-size: 1.2rem;">FCASINO</span>
-        <div class="balance-display" id="balanceDisplay">0.00 🪙</div>
+<div class="casino-machine">
+    <div class="top-info">
+        <div class="brand">FC_INDUSTRIAL</div>
+        <div class="balance-box" id="balanceVal">000000</div>
     </div>
 
-    <div class="slot-window">
-        <div class="glass-effect"></div>
-        <div class="reel-col"><div id="reel1" class="reel-track"></div></div>
-        <div class="reel-col"><div id="reel2" class="reel-track"></div></div>
-        <div class="reel-col"><div id="reel3" class="reel-track"></div></div>
+    <div class="slot-viewport">
+        <div class="glass-overlay"></div>
+        <div class="reel-unit"><div id="reel1" class="reel-strip"></div></div>
+        <div class="reel-unit"><div id="reel2" class="reel-strip"></div></div>
+        <div class="reel-unit"><div id="reel3" class="reel-strip"></div></div>
     </div>
 
-    <div class="ui-panel">
-        <div class="input-wrapper">
-            <input type="number" id="betInput" value="100" min="10">
+    <div class="bottom-ui">
+        <div class="bet-control">
+            <label>Current Stake</label>
+            <input type="number" id="betVal" value="100">
         </div>
-        <button class="btn-spin" id="spinBtn" onclick="handleSpin()">Spin</button>
-        <div id="statusMsg" style="text-align: center; font-size: 0.8rem; color: #64748b;">READY TO PLAY</div>
+        <button class="btn-pull" id="spinBtn" onclick="runSpin()">Pull</button>
     </div>
+    <div id="statusText">System Online</div>
 </div>
 
 <script>
-    // Твои настройки Firebase (оставляем те же)
+    // Твои настройки Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyCsd-EMW60Nmk452niquucF3wDfYkQbNlU",
         authDomain: "fcasino-64ooo.firebaseapp.com",
@@ -215,34 +262,32 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // SVG Иконки для слотов
     const ICONS = {
-        '7': `<svg viewBox="0 0 24 24" fill="none"><path d="M6 4h12v2l-8 14h-3l8-14h-9v-2z" fill="#ef4444" stroke="#7f1d1d" stroke-width="1"/></svg>`,
-        'diamond': `<svg viewBox="0 0 24 24" fill="none"><path d="M12 2L4 10l8 12 8-12-8-8z" fill="#38bdf8" stroke="#0c4a6e" stroke-width="1"/></svg>`,
-        'bar': `<svg viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="20" height="10" rx="2" fill="#fbbf24"/><text x="12" y="14" font-size="6" text-anchor="middle" fill="#000" font-weight="bold">BAR</text></svg>`,
-        'cherry': `<svg viewBox="0 0 24 24" fill="none"><circle cx="8" cy="16" r="4" fill="#be123c"/><circle cx="16" cy="14" r="4" fill="#be123c"/><path d="M12 4c0 0-1 6-4 8m4-8c0 0 2 5 4 6" stroke="#15803d" stroke-width="2"/></svg>`
+        '7': `<svg viewBox="0 0 24 24"><path d="M6 4h12v2l-8 14h-3l8-14h-9v-2z" fill="#ff4d4d"/></svg>`,
+        'diamond': `<svg viewBox="0 0 24 24"><path d="M12 2L4 10l8 12 8-12-8-8z" fill="#00d2ff"/></svg>`,
+        'bar': `<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="10" rx="2" fill="#f59e0b"/><text x="12" y="14" font-size="6" text-anchor="middle" fill="#000" font-weight="bold">BAR</text></svg>`,
+        'cherry': `<svg viewBox="0 0 24 24"><circle cx="8" cy="16" r="4" fill="#e11d48"/><circle cx="16" cy="14" r="4" fill="#e11d48"/><path d="M12 4c0 0-1 6-4 8m4-8c0 0 2 5 4 6" stroke="#059669" stroke-width="2"/></svg>`
     };
     
     const KEYS = Object.keys(ICONS);
     let balance = 0;
     let spinning = false;
 
-    // Инициализация ленты барабанов
-    function buildReels() {
+    function init() {
         ['reel1', 'reel2', 'reel3'].forEach(id => {
             const track = document.getElementById(id);
-            for(let i=0; i<40; i++) {
+            for(let i=0; i<45; i++) {
                 const key = KEYS[Math.floor(Math.random() * KEYS.length)];
                 const div = document.createElement('div');
-                div.className = 'icon-box';
+                div.className = 'icon-wrap';
                 div.innerHTML = ICONS[key];
-                div.dataset.value = key;
+                div.dataset.val = key;
                 track.appendChild(div);
             }
         });
     }
 
-    buildReels();
+    init();
     auth.signInAnonymously();
 
     auth.onAuthStateChanged(user => {
@@ -250,68 +295,66 @@
             db.collection('users').doc(user.uid).onSnapshot(doc => {
                 if(doc.exists) {
                     balance = doc.data().balance;
-                    document.getElementById('balanceDisplay').innerText = `${balance.toLocaleString()} 🪙`;
+                    document.getElementById('balanceVal').innerText = balance.toString().padStart(6, '0');
                 } else {
-                    db.collection('users').doc(user.uid).set({ balance: 5000 });
+                    db.collection('users').doc(user.uid).set({ balance: 2500 });
                 }
             });
         }
     });
 
-    async function handleSpin() {
+    async function runSpin() {
         if(spinning) return;
-        const bet = parseInt(document.getElementById('betInput').value);
+        const bet = parseInt(document.getElementById('betVal').value);
 
         if(bet > balance || bet <= 0) {
-            alert("Недостаточно средств!");
+            updateStatus("Insufficient Credits");
             return;
         }
 
         spinning = true;
         const btn = document.getElementById('spinBtn');
         btn.disabled = true;
+        updateStatus("Processing...");
 
-        // Списание
         await db.collection('users').doc(auth.currentUser.uid).update({
             balance: firebase.firestore.FieldValue.increment(-bet)
         });
 
         const results = [];
-        const reelHeight = window.innerWidth <= 400 ? 110 : 140;
+        const itemHeight = window.innerWidth <= 420 ? 100 : 120;
 
         ['reel1', 'reel2', 'reel3'].forEach((id, i) => {
             const track = document.getElementById(id);
-            const targetIndex = 35; // На какой индекс крутим
-            const symbolKey = KEYS[Math.floor(Math.random() * KEYS.length)];
+            const targetIdx = 40; 
+            const key = KEYS[Math.floor(Math.random() * KEYS.length)];
             
-            results.push(symbolKey);
-            track.children[targetIndex].innerHTML = ICONS[symbolKey];
-            track.children[targetIndex].dataset.value = symbolKey;
+            results.push(key);
+            track.children[targetIdx].innerHTML = ICONS[key];
+            track.children[targetIdx].dataset.val = key;
 
-            const travel = targetIndex * reelHeight;
-            track.style.transition = `transform ${3 + i*0.5}s cubic-bezier(0.15, 0, 0.15, 1)`;
-            track.style.transform = `translateY(-${travel}px)`;
+            const dist = targetIdx * itemHeight;
+            track.style.transition = `transform ${3 + i*0.4}s cubic-bezier(0.2, 0, 0, 1)`;
+            track.style.transform = `translateY(-${dist}px)`;
         });
 
         setTimeout(async () => {
-            let mult = 0;
+            let win = 0;
             if(results[0] === results[1] && results[1] === results[2]) {
-                mult = (results[0] === '7') ? 15 : 5;
+                win = (results[0] === '7') ? bet * 20 : bet * 10;
             } else if(results[0] === results[1] || results[1] === results[2]) {
-                mult = 2;
+                win = bet * 2;
             }
 
-            if(mult > 0) {
-                const win = bet * mult;
+            if(win > 0) {
                 await db.collection('users').doc(auth.currentUser.uid).update({
                     balance: firebase.firestore.FieldValue.increment(win)
                 });
-                document.getElementById('statusMsg').innerText = `WIN: +${win}!`;
+                updateStatus(`Win: +${win}`);
             } else {
-                document.getElementById('statusMsg').innerText = `TRY AGAIN`;
+                updateStatus("No Match");
             }
 
-            // Сброс без анимации для следующего спина
             setTimeout(() => {
                 ['reel1', 'reel2', 'reel3'].forEach((id, i) => {
                     const track = document.getElementById(id);
@@ -321,9 +364,13 @@
                 });
                 spinning = false;
                 btn.disabled = false;
-            }, 500);
+            }, 600);
 
         }, 4000);
+    }
+
+    function updateStatus(msg) {
+        document.getElementById('statusText').innerText = msg;
     }
 </script>
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FCasino - Realistic Roulette</title>
+    <title>FCasino - Classic Edition</title>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -11,21 +11,30 @@
 
     <style>
         :root {
-            --accent-cyan: #00e5ff;
-            --text-color: #e2e8f0;
-            --panel-bg: rgba(21, 25, 40, 0.95);
-            --border-color: #2d3748;
+            --bg-felt: #0d3b1f;
+            --panel-wood: #2c1609;
+            --panel-border: #8c6239;
+            --text-gold: #d4af37;
+            --text-white: #ffffff;
+            --red-sector: #991b1b;
+            --black-sector: #111827;
+            --green-sector: #1b4d3e;
+            --shadow-classic: 0 15px 35px rgba(0, 0, 0, 0.9);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
         body {
-            /* Реалистичный фон - зеленое сукно */
-            background-color: #053e1e;
-            background-image: url('felt_bg.jpg'); 
-            background-size: cover;
-            color: var(--text-color);
-            font-family: 'Georgia', serif; /* Более классический шрифт */
+            background-color: #061f10;
+            background-image: radial-gradient(#113d21 20%, transparent 20%), radial-gradient(#082413 20%, transparent 20%);
+            background-size: 50px 50px;
+            background-position: 0 0, 25px 25px;
+            color: var(--text-white);
+            font-family: 'Georgia', serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -34,94 +43,106 @@
             overflow: hidden;
         }
 
-        /* Основной контейнер игры */
-        .game-area {
+        .container {
+            background-color: var(--panel-wood);
+            border: 3px solid var(--panel-border);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 550px;
+            padding: 35px;
+            box-shadow: var(--shadow-classic);
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            width: 100%;
-            max-width: 900px;
-        }
-
-        /* Холст для рулетки (3D/2D эффект) */
-        #rouletteCanvas {
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-            border-radius: 50%;
-            /* Фикс для Safari */
-            -webkit-mask-image: -webkit-radial-gradient(white, black);
-        }
-
-        /* Панель управления */
-        .control-panel {
-            background-color: var(--panel-bg);
-            border: 2px solid gold; /* Золотая каемка */
-            border-radius: 12px;
-            width: 100%;
-            max-width: 500px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
+            gap: 25px;
         }
 
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--panel-border);
         }
 
         .header h1 {
             font-size: 1.8rem;
-            color: gold;
+            color: var(--text-gold);
             font-weight: bold;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.8);
         }
 
         .balance-box {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
-            color: #fff;
-            background: rgba(255, 215, 0, 0.15);
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: 1px solid gold;
+            color: var(--text-gold);
+            background: rgba(44, 22, 9, 0.8);
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 1px solid var(--panel-border);
+        }
+
+        .roulette-wrapper {
+            position: relative;
+            width: 360px;
+            height: 360px;
+            margin: 0 auto;
+        }
+
+        #rouletteCanvas {
+            border-radius: 50%;
+            border: 6px solid #4a2c11;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.9), 0 10px 20px rgba(0, 0, 0, 0.8);
+            background-color: #1a1510;
+        }
+
+        .pointer {
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-bottom: 22px solid var(--text-gold);
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.8));
         }
 
         .controls {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 18px;
         }
 
         .input-group {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            background: rgba(0,0,0,0.3);
-            padding: 10px;
-            border-radius: 8px;
+            flex-direction: column;
+            gap: 8px;
         }
 
         .input-group label {
-            font-size: 1rem;
-            color: #ccc;
+            font-size: 0.95rem;
+            color: var(--text-gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .input-group input {
-            width: 120px;
-            padding: 10px;
-            background: #000;
-            border: 1px solid var(--border-color);
+            width: 100%;
+            padding: 14px;
+            background: #150a04;
+            border: 1px solid var(--panel-border);
             border-radius: 6px;
-            color: gold;
-            font-size: 1.2rem;
+            color: var(--text-gold);
+            font-size: 1.3rem;
             font-weight: bold;
-            text-align: center;
             outline: none;
+            font-family: 'Georgia', serif;
+            text-align: center;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.8);
         }
 
         .buttons-grid {
@@ -131,107 +152,101 @@
         }
 
         button {
-            padding: 18px;
+            padding: 16px;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.2s;
-            color: #fff;
+            transition: all 0.25s ease;
+            color: #ffffff;
             text-transform: uppercase;
             letter-spacing: 1px;
-            text-shadow: 0 2px 2px rgba(0,0,0,0.8);
+            font-family: 'Georgia', serif;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
         }
 
         button:disabled {
-            opacity: 0.5;
+            opacity: 0.4;
             cursor: not-allowed;
             transform: none !important;
+            box-shadow: none;
         }
 
         .btn-red {
-            background: linear-gradient(to bottom, #e53e3e, #991b1b);
-            box-shadow: 0 4px 0 #7f1d1d, 0 6px 10px rgba(0,0,0,0.5);
+            background: linear-gradient(135deg, #b91c1c, #7f1d1d);
+            border: 1px solid #dc2626;
         }
         .btn-red:not(:disabled):hover {
+            background: linear-gradient(135deg, #dc2626, #991b1b);
             transform: translateY(-2px);
-            background: linear-gradient(to bottom, #f87171, #b91c1c);
-        }
-        .btn-red:not(:disabled):active {
-            transform: translateY(2px);
-            box-shadow: 0 1px 0 #7f1d1d, 0 2px 5px rgba(0,0,0,0.5);
         }
 
         .btn-black {
-            background: linear-gradient(to bottom, #2d3748, #000000);
-            border: 1px solid #4a5568;
-            box-shadow: 0 4px 0 #1a202c, 0 6px 10px rgba(0,0,0,0.5);
+            background: linear-gradient(135deg, #1f2937, #111827);
+            border: 1px solid #374151;
         }
         .btn-black:not(:disabled):hover {
+            background: linear-gradient(135deg, #374151, #1f2937);
             transform: translateY(-2px);
-            background: linear-gradient(to bottom, #4a5568, #1a202c);
-        }
-        .btn-black:not(:disabled):active {
-            transform: translateY(2px);
-            box-shadow: 0 1px 0 #1a202c, 0 2px 5px rgba(0,0,0,0.5);
         }
 
         .btn-login {
             background: transparent;
-            border: 1px solid gold;
-            color: gold;
-            padding: 8px 16px;
+            border: 1px solid var(--panel-border);
+            color: var(--text-gold);
+            padding: 6px 16px;
             border-radius: 6px;
-            font-family: sans-serif;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            text-transform: none;
+            letter-spacing: normal;
         }
         .btn-login:hover {
-            background: rgba(255, 215, 0, 0.1);
+            background: rgba(140, 98, 57, 0.2);
         }
 
         #statusText {
-            margin-top: 15px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             text-align: center;
-            color: #fff;
+            color: #d1d5db;
             min-height: 25px;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            line-height: 1.4;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
         }
-        
-        .win { color: #4ade80 !important; font-weight: bold; }
+
+        .win { color: #34d399 !important; font-weight: bold; }
         .lose { color: #f87171 !important; }
     </style>
 </head>
 <body>
 
-    <div class="game-area">
-        <canvas id="rouletteCanvas" width="600" height="600"></canvas>
-
-        <div class="control-panel">
-            <div class="header">
-                <h1>FCasino</h1>
-                <button class="btn-login" id="loginBtn" onclick="loginAnon()">Вход</button>
-            </div>
-
-            <div class="controls">
-                <div class="input-group">
-                    <label for="betAmount">Ставка (🪙):</label>
-                    <input type="number" id="betAmount" value="100" min="10" step="10">
-                </div>
-
-                <div class="buttons-grid">
-                    <button class="btn-red" id="btnRed" onclick="makeBet('red')">Красное</button>
-                    <button class="btn-black" id="btnBlack" onclick="makeBet('black')">Черное</button>
-                </div>
-            </div>
-
-            <div id="statusText">Войдите, чтобы начать игру</div>
+    <div class="container">
+        <div class="header">
+            <h1>FCasino</h1>
+            <button class="btn-login" id="loginBtn" onclick="loginAnon()">Вход</button>
         </div>
+
+        <div class="roulette-wrapper">
+            <div class="pointer"></div>
+            <canvas id="rouletteCanvas" width="360" height="360"></canvas>
+        </div>
+
+        <div class="controls">
+            <div class="input-group">
+                <label for="betAmount">Ставка (🪙)</label>
+                <input type="number" id="betAmount" value="100" min="10" step="10">
+            </div>
+
+            <div class="buttons-grid">
+                <button class="btn-red" id="btnRed" onclick="makeBet('red')">Красное</button>
+                <button class="btn-black" id="btnBlack" onclick="makeBet('black')">Черное</button>
+            </div>
+        </div>
+
+        <div id="statusText">Инициализация...</div>
     </div>
 
     <script>
-        // --- КОНФИГУРАЦИЯ FIREBASE (ТВОИ ДАННЫЕ) ---
         const firebaseConfig = {
             apiKey: "AIzaSyCsd-EMW60Nmk452niquucF3wDfYkQbNlU",
             authDomain: "fcasino-64ooo.firebaseapp.com",
@@ -242,151 +257,98 @@
             measurementId: "G-DPW70MMJHJ"
         };
 
-        // Инициализация
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // Элементы UI
         const canvas = document.getElementById('rouletteCanvas');
         const ctx = canvas.getContext('2d');
         const statusText = document.getElementById('statusText');
-        const balanceEl = document.getElementById('userBalance');
         const btnRed = document.getElementById('btnRed');
         const btnBlack = document.getElementById('btnBlack');
-        
+
         let currentUser = null;
         let balance = 0;
+        let currentRotation = 0;
         let isSpinning = false;
 
-        // Данные колеса
-        const wheelNumbers = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
+        const wheelNumbers = [
+            0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10,
+            5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
+        ];
         const reds = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
 
-        // --- ЗАГРУЗКА ГРАФИКИ (РЕАЛИСТИКА) ---
-        const images = {};
-        let imagesLoaded = 0;
-        const totalImages = 2; // Колесо и Шарик. Фон загружается CSS.
+        function drawWheel(angle = 0) {
+            const width = canvas.width;
+            const height = canvas.height;
+            const radius = width / 2 - 12;
+            const centerX = width / 2;
+            const centerY = height / 2;
 
-        function imageLoadedCallback() {
-            imagesLoaded++;
-            if (imagesLoaded === totalImages) {
-                requestAnimationFrame(gameLoop); // Запуск цикла отрисовки
-                statusText.innerText = "Графика загружена. Войдите в систему.";
-            }
-        }
+            ctx.clearRect(0, 0, width, height);
 
-        images.wheel = new Image();
-        images.wheel.src = 'wheel_texture.png'; // Убедись, что файл в той же папке
-        images.wheel.onload = imageLoadedCallback;
-
-        images.ball = new Image();
-        images.ball.src = 'ball_texture.png'; // Убедись, что файл в той же папке
-        images.ball.onload = imageLoadedCallback;
-
-
-        // --- СОСТОЯНИЕ АНИМАЦИИ ---
-        const rouletteState = {
-            wheelAngle: 0,
-            wheelSpeed: 0,
-            ballAngle: 0, // Угол шарика относительно центра
-            ballRadius: 260, // Радиус желоба
-            ballSpeed: 0,
-            targetIndex: -1, // Куда должен упасть
-            phase: 'idle' // idle, spinning, launching_ball, ball_dropping, stopped
-        };
-
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
-
-
-        // --- ОСНОВНОЙ ЦИКЛ ОТРИСОВКИ (CANVASLOOP) ---
-        function gameLoop() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Очистка холста
-
-            // 1. Отрисовка тени под колесом
-            ctx.save();
+            // Отрисовка деревянной текстуры
+            let woodGrad = ctx.createRadialGradient(centerX, centerY, 10, centerX, centerY, radius + 10);
+            woodGrad.addColorStop(0, '#592c0c');
+            woodGrad.addColorStop(0.8, '#2c1609');
+            woodGrad.addColorStop(1, '#150a04');
+            ctx.fillStyle = woodGrad;
             ctx.beginPath();
-            ctx.arc(centerX, centerY, 290, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.arc(centerX, centerY, radius + 8, 0, Math.PI * 2);
             ctx.fill();
-            ctx.restore();
 
-            // 2. Логика движения колеса
-            if (rouletteState.phase !== 'idle' && rouletteState.phase !== 'stopped') {
-                rouletteState.wheelSpeed = Math.max(0.002, rouletteState.wheelSpeed * 0.998); // Плавное замедление колеса
-                rouletteState.wheelAngle += rouletteState.wheelSpeed;
-            }
-
-            // 3. Отрисовка вращающегося колеса
             ctx.save();
             ctx.translate(centerX, centerY);
-            ctx.rotate(rouletteState.wheelAngle);
-            // Рисуем текстуру колеса, центрируя её
-            ctx.drawImage(images.wheel, -images.wheel.width / 2, -images.wheel.height / 2);
-            ctx.restore();
+            ctx.rotate(angle);
 
-            // 4. Логика и отрисовка шарика
-            drawAndManageBall();
+            const count = wheelNumbers.length;
+            const arc = (Math.PI * 2) / count;
 
-            requestAnimationFrame(gameLoop); // Рекурсивный вызов
-        }
+            for (let i = 0; i < count; i++) {
+                const angleStart = i * arc;
+                constEnd = constStart + arc;
 
-        // --- ЛОГИКА ФИЗИКИ ШАРИКА ---
-        function drawAndManageBall() {
-            if (rouletteState.phase === 'idle' || rouletteState.phase === 'stopped') return;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.arc(0, 0, radius, constStart, constEnd, false);
+                ctx.closePath();
 
-            // Координаты шарика на основе угла и радиуса
-            const ballX = centerX + Math.cos(rouletteState.ballAngle) * rouletteState.ballRadius;
-            const ballY = centerY + Math.sin(rouletteState.ballAngle) * rouletteState.ballRadius;
-
-            // Отрисовка шарика (с тенью для объема)
-            ctx.save();
-            ctx.translate(ballX, ballY);
-            // Тень шарика
-            ctx.beginPath();
-            ctx.arc(2, 2, 8, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(0,0,0,0.4)';
-            ctx.fill();
-            // Текстура шарика
-            ctx.drawImage(images.ball, -8, -8, 16, 16); // Размер 16x16
-            ctx.restore();
-
-            // Физика шарика в зависимости от фазы
-            if (rouletteState.phase === 'launching_ball') {
-                // Шарик быстро летит по внешнему желобу
-                rouletteState.ballSpeed = Math.max(0.05, rouletteState.ballSpeed * 0.992);
-                rouletteState.ballAngle -= rouletteState.ballSpeed; // Шарик летит ПРОТИВ вращения колеса
-
-                // Если шарик сильно замедлился, переходим к падению
-                if (rouletteState.ballSpeed < 0.06) {
-                    rouletteState.phase = 'ball_dropping';
-                    // Рассчитываем, где шарик должен встретиться с колесом
-                    // Это сложная математика, упростим: привяжем к таргету
+                if (wheelNumbers[i] === 0) {
+                    ctx.fillStyle = '#1b4d3e'; // Зеленый
+                } else if (reds.includes(wheelNumbers[i])) {
+                    ctx.fillStyle = '#991b1b'; // Красный
+                } else {
+                    ctx.fillStyle = '#111827'; // Черный
                 }
-            } 
-            else if (rouletteState.phase === 'ball_dropping') {
-                // Шарик падает внутрь (уменьшаем радиус)
-                rouletteState.ballRadius = Math.max(185, rouletteState.ballRadius - 2); // 185 - радиус ячеек
-                rouletteState.ballAngle -= rouletteState.ballSpeed;
-                rouletteState.ballSpeed *= 0.99; // Быстрое замедление
 
-                // Шарик достиг ячеек
-                if (rouletteState.ballRadius <= 185) {
-                    rouletteState.phase = 'stopped';
-                    isSpinning = false; // Разблокируем UI (реальный результат объявит setTimeout)
-                    
-                    // Фиксируем шарик относительно колеса в нужной ячейке
-                    const count = wheelNumbers.length;
-                    const degreesPerSector = (Math.PI * 2) / count;
-                    rouletteState.ballAngle = (rouletteState.targetIndex * degreesPerSector) - rouletteState.wheelAngle - Math.PI/2;
-                    rouletteState.ballRadius = 185;
-                }
+                ctx.fill();
+                ctx.strokeStyle = '#d4af37'; // Золотая линия
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                ctx.save();
+                ctx.rotate(constStart + arc / 2);
+                ctx.textAlign = 'right';
+                ctx.fillStyle = '#d4af37';
+                ctx.font = 'bold 11px Georgia, serif';
+                ctx.fillText(wheelNumbers[i], radius - 10, 4);
+                ctx.restore();
             }
+
+            ctx.restore();
+
+            // Латунный центр
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 34, 0, Math.PI * 2);
+            let centerGrad = ctx.createRadialGradient(centerX, centerY, 5, centerX, centerY, 34);
+            centerGrad.addColorStop(0, '#ffe58f');
+            centerGrad.addColorStop(1, '#8c6239');
+            ctx.fillStyle = centerGrad;
+            ctx.strokeStyle = '#d4af37';
+            ctx.lineWidth = 2;
+            ctx.fill();
+            ctx.stroke();
         }
-
-
-        // --- FIREBASE И ЛОГИКА ИГРЫ ---
 
         function setButtonsState(disabled) {
             btnRed.disabled = disabled;
@@ -395,25 +357,32 @@
 
         function loginAnon() {
             statusText.innerText = "Вход...";
-            auth.signInAnonymously().catch(e => statusText.innerText = "Ошибка: " + e.message);
+            auth.signInAnonymously().catch((e) => {
+                statusText.innerText = "Ошибка: " + e.message;
+            });
         }
 
-        auth.onAuthStateChanged(user => {
+        auth.onAuthStateChanged((user) => {
             if (user) {
                 currentUser = user;
                 document.getElementById('loginBtn').innerText = "ID: " + user.uid.substring(0, 4);
                 
-                db.collection('users').doc(user.uid).onSnapshot(doc => {
+                const userRef = db.collection('users').doc(user.uid);
+                
+                userRef.onSnapshot((doc) => {
                     if (doc.exists) {
                         balance = doc.data().balance;
                         updateBalanceDisplay();
-                        if (!isSpinning) statusText.innerText = "Ставки приняты.";
+                        if (!isSpinning) statusText.innerText = "Готовы сделать ставку.";
                     } else {
-                        db.collection('users').doc(user.uid).set({ balance: 5000 }); // Стартовый капитал больше
+                        userRef.set({ balance: 5000 });
                     }
                 });
+                
                 setButtonsState(false);
             } else {
+                document.getElementById('loginBtn').innerText = "Вход";
+                statusText.innerText = "Войдите в систему для игры";
                 setButtonsState(true);
             }
         });
@@ -432,68 +401,85 @@
 
         async function makeBet(betType) {
             if (isSpinning || !currentUser) return;
-            
+
             const betAmount = parseInt(document.getElementById('betAmount').value);
-            if (isNaN(betAmount) || betAmount < 10 || betAmount > balance) {
-                statusText.innerText = "Неверная ставка или мало монет!";
-                statusText.classList.add('lose');
+            
+            if (isNaN(betAmount) || betAmount < 10) {
+                statusText.innerText = "Укажите корректную сумму ставки!";
+                statusText.className = 'lose';
                 return;
             }
-            statusText.classList.remove('lose', 'win');
+
+            if (betAmount > balance) {
+                statusText.innerText = "Недостаточно средств на балансе";
+                statusText.className = 'lose';
+                return;
+            }
 
             isSpinning = true;
-            setButtonsState(true); // Блокируем кнопки
+            setButtonsState(true);
+            statusText.innerText = "Ставка принята. Вращаем колесо...";
+            statusText.className = '';
 
             try {
                 const userRef = db.collection('users').doc(currentUser.uid);
                 await userRef.update({ balance: balance - betAmount });
 
-                // РАССЧЕТ РЕЗУЛЬТАТА (КЛИЕНТСКИЙ - ДЛЯ ДЕМО)
-                // Для защиты в продакшене это должно быть в Cloud Functions!
                 const randomIndex = Math.floor(Math.random() * wheelNumbers.length);
                 const winningNumber = wheelNumbers[randomIndex];
-                const winningColor = (winningNumber === 0) ? 'green' : (reds.includes(winningNumber) ? 'red' : 'black');
+                let winningColor = (winningNumber === 0) ? 'green' : (reds.includes(winningNumber) ? 'red' : 'black');
                 
                 const isWin = (betType === winningColor);
                 const payout = isWin ? betAmount * 2 : 0;
 
-                // ЗАПУСК РЕАЛИСТИЧНОЙ АНИМАЦИИ
-                rouletteState.targetIndex = randomIndex;
-                statusText.innerText = "Ставка принята! Крутим...";
-                launchBallAnimation();
+                let start = null;
+                const duration = 7000;
+                
+                const count = wheelNumbers.length;
+                const degreesPerSector = (Math.PI * 2) / count;
+                const finalTargetAngle = randomIndex * degreesPerSector;
+                const extraRotations = Math.PI * 2 * 14;
+                const finalAngle = extraRotations + (Math.PI * 2 - finalTargetAngle);
 
-                // Ожидание завершения анимации и объявление результата
-                setTimeout(async () => {
-                    if (isWin) {
-                        await userRef.update({ balance: balance + payout });
-                        statusText.innerText = `🎉 ПОБЕДА! Выпало ${winningNumber}. Вы выиграли ${payout} 🪙!`;
-                        statusText.classList.add('win');
+                function step(timestamp) {
+                    if (!start) start = timestamp;
+                    const progress = (timestamp - start) / duration;
+                    
+                    if (progress < 1) {
+                        const eased = 1 - Math.pow(1 - progress, 3);
+                        drawWheel(eased * finalAngle);
+                        requestAnimationFrame(step);
                     } else {
-                        statusText.innerText = `Проигрыш. Выпало ${winningNumber} (${winningColor}).`;
-                        statusText.classList.add('lose');
+                        drawWheel(finalAngle);
+                        
+                        setTimeout(async () => {
+                            if (isWin) {
+                                await userRef.update({ balance: balance - betAmount + payout });
+                                statusText.innerText = `ПОБЕДА! Выпало ${winningNumber} (${winningColor}). Выигрыш: +${payout} 🪙`;
+                                statusText.className = 'win';
+                            } else {
+                                statusText.innerText = `Проигрыш! Выпало ${winningNumber} (${winningColor}).`;
+                                statusText.className = 'lose';
+                            }
+                            
+                            isSpinning = false;
+                            setButtonsState(false);
+                        }, 500);
                     }
-                    // Кнопки разблокируются в gameLoop, когда фаза станет 'stopped'
-                    // Но для надежности продублируем здесь
-                    setButtonsState(false);
-                    isSpinning = false;
-                }, 8500); // Анимация длится около 8 секунд
+                }
+                
+                requestAnimationFrame(step);
 
-            } catch (error) {
-                statusText.innerText = "Ошибка: " + error.message;
+            } catch (e) {
+                statusText.innerText = "Ошибка: " + e.message;
+                statusText.className = 'lose';
                 isSpinning = false;
                 setButtonsState(false);
             }
         }
 
-        // Запуск последовательности анимации
-        function launchBallAnimation() {
-            // Установка начальных скоростей
-            rouletteState.wheelSpeed = 0.04; // Колесо начинает вращаться
-            rouletteState.ballSpeed = 0.15; // Шарик быстро запускается
-            rouletteState.ballRadius = 260; // На внешний желоб
-            rouletteState.phase = 'launching_ball';
-        }
-
+        // Первоначальный рендер колеса
+        drawWheel(0);
     </script>
 </body>
 </html>

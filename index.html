@@ -3,282 +3,235 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FCasino - Midnight Edition</title>
+    <title>FCasino - Realistic Roulette</title>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
 
     <style>
         :root {
-            --bg-color: #0d111a;
-            --card-bg: #151928;
             --accent-cyan: #00e5ff;
-            --accent-purple: #9b51e0;
             --text-color: #e2e8f0;
-            --red-color: #e53e3e;
-            --black-color: #1a202c;
-            --green-color: #319795;
+            --panel-bg: rgba(21, 25, 40, 0.95);
             --border-color: #2d3748;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            background-color: var(--bg-color);
+            /* Реалистичный фон - зеленое сукно */
+            background-color: #053e1e;
+            background-image: url('felt_bg.jpg'); 
+            background-size: cover;
             color: var(--text-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Georgia', serif; /* Более классический шрифт */
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
             min-height: 100vh;
             padding: 20px;
+            overflow: hidden;
         }
 
-        .container {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
+        /* Основной контейнер игры */
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        /* Холст для рулетки (3D/2D эффект) */
+        #rouletteCanvas {
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            border-radius: 50%;
+            /* Фикс для Safari */
+            -webkit-mask-image: -webkit-radial-gradient(white, black);
+        }
+
+        /* Панель управления */
+        .control-panel {
+            background-color: var(--panel-bg);
+            border: 2px solid gold; /* Золотая каемка */
             border-radius: 12px;
             width: 100%;
             max-width: 500px;
-            padding: 30px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
         }
 
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
             border-bottom: 1px solid var(--border-color);
         }
 
         .header h1 {
-            font-size: 1.6rem;
-            color: var(--accent-cyan);
-            font-weight: 700;
-            letter-spacing: 0.5px;
+            font-size: 1.8rem;
+            color: gold;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
 
         .balance-box {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #ffffff;
-            background: rgba(0, 229, 255, 0.12);
-            padding: 8px 16px;
-            border-radius: 8px;
-            border: 1px solid var(--accent-cyan);
-            box-shadow: 0 0 8px rgba(0, 229, 255, 0.2);
-        }
-
-        .roulette-wrapper {
-            position: relative;
-            width: 360px;
-            height: 360px;
-            margin: 10px auto 30px;
-        }
-
-        .pointer {
-            width: 0;
-            height: 0;
-            border-left: 12px solid transparent;
-            border-right: 12px solid transparent;
-            border-bottom: 24px solid var(--accent-cyan);
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 20;
-            filter: drop-shadow(0 0 6px var(--accent-cyan));
-        }
-
-        .wheel {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: var(--black-color);
-            border: 12px solid var(--border-color);
-            position: relative;
-            overflow: hidden;
-            transition: transform 7s cubic-bezier(0.1, 0.75, 0.2, 1);
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
-        }
-
-        .sector {
-            position: absolute;
-            width: 50%;
-            height: 50%;
-            top: 0;
-            left: 50%;
-            transform-origin: 0% 100%;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            font-size: 12px;
+            font-size: 1.2rem;
             font-weight: bold;
             color: #fff;
-            padding-right: 10px;
-        }
-
-        .sector.red { 
-            background-color: var(--red-color); 
-        }
-        .sector.black { 
-            background-color: var(--black-color); 
-            border: 0.5px solid rgba(255, 255, 255, 0.05);
-        }
-        .sector.green { 
-            background-color: var(--green-color); 
-        }
-
-        .ball {
-            width: 16px;
-            height: 16px;
-            background: #ffffff;
-            border-radius: 50%;
-            position: absolute;
-            top: 35px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-            box-shadow: 0 0 12px #ffffff;
-            transition: transform 7s cubic-bezier(0.1, 0.75, 0.2, 1);
+            background: rgba(255, 215, 0, 0.15);
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid gold;
         }
 
         .controls {
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 15px;
         }
 
         .input-group {
             display: flex;
-            flex-direction: column;
-            gap: 8px;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 8px;
         }
 
         .input-group label {
-            font-size: 0.95rem;
-            color: var(--text-color);
-            font-weight: 500;
+            font-size: 1rem;
+            color: #ccc;
         }
 
         .input-group input {
-            width: 100%;
-            padding: 14px;
-            background: #1b1f2d;
+            width: 120px;
+            padding: 10px;
+            background: #000;
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            color: #fff;
-            font-size: 1.1rem;
+            color: gold;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
             outline: none;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-
-        .input-group input:focus {
-            border-color: var(--accent-cyan);
-            box-shadow: 0 0 5px rgba(0, 229, 255, 0.4);
         }
 
         .buttons-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 15px;
         }
 
         button {
-            padding: 15px;
+            padding: 18px;
             border: none;
-            border-radius: 6px;
-            font-size: 1.05rem;
-            font-weight: 600;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
             cursor: pointer;
-            transition: all 0.25s ease-in-out;
+            transition: all 0.2s;
             color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 2px rgba(0,0,0,0.8);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
         }
 
         .btn-red {
-            background: var(--red-color);
-            box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.3);
+            background: linear-gradient(to bottom, #e53e3e, #991b1b);
+            box-shadow: 0 4px 0 #7f1d1d, 0 6px 10px rgba(0,0,0,0.5);
         }
-        .btn-red:hover {
-            background: #b91c1c;
+        .btn-red:not(:disabled):hover {
             transform: translateY(-2px);
+            background: linear-gradient(to bottom, #f87171, #b91c1c);
+        }
+        .btn-red:not(:disabled):active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #7f1d1d, 0 2px 5px rgba(0,0,0,0.5);
         }
 
         .btn-black {
-            background: #202635;
-            border: 1px solid var(--border-color);
-            box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.5);
+            background: linear-gradient(to bottom, #2d3748, #000000);
+            border: 1px solid #4a5568;
+            box-shadow: 0 4px 0 #1a202c, 0 6px 10px rgba(0,0,0,0.5);
         }
-        .btn-black:hover {
-            background: #111827;
+        .btn-black:not(:disabled):hover {
             transform: translateY(-2px);
-            border-color: #374151;
+            background: linear-gradient(to bottom, #4a5568, #1a202c);
+        }
+        .btn-black:not(:disabled):active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #1a202c, 0 2px 5px rgba(0,0,0,0.5);
         }
 
         .btn-login {
             background: transparent;
-            border: 1px solid var(--accent-cyan);
-            color: var(--accent-cyan);
+            border: 1px solid gold;
+            color: gold;
             padding: 8px 16px;
             border-radius: 6px;
+            font-family: sans-serif;
             font-size: 0.9rem;
-            font-weight: 500;
-            box-shadow: 0 0 3px rgba(0, 229, 255, 0.1);
         }
         .btn-login:hover {
-            background: rgba(0, 229, 255, 0.15);
-            box-shadow: 0 0 8px rgba(0, 229, 255, 0.4);
+            background: rgba(255, 215, 0, 0.1);
         }
 
         #statusText {
-            margin-top: 20px;
-            font-size: 0.9rem;
+            margin-top: 15px;
+            font-size: 1rem;
             text-align: center;
-            color: var(--accent-cyan);
-            min-height: 24px;
-            line-height: 1.2;
+            color: #fff;
+            min-height: 25px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
         }
+        
+        .win { color: #4ade80 !important; font-weight: bold; }
+        .lose { color: #f87171 !important; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="header">
-            <h1>FCasino</h1>
-            <button class="btn-login" id="loginBtn" onclick="loginAnon()">Анонимный вход</button>
-        </div>
+    <div class="game-area">
+        <canvas id="rouletteCanvas" width="600" height="600"></canvas>
 
-        <div class="roulette-wrapper">
-            <div class="pointer"></div>
-            <div class="wheel" id="wheel"></div>
-            <div class="ball" id="ball"></div>
-        </div>
-
-        <div class="controls">
-            <div class="input-group">
-                <label for="betAmount">Сумма ставки</label>
-                <input type="number" id="betAmount" value="50" min="10">
+        <div class="control-panel">
+            <div class="header">
+                <h1>FCasino</h1>
+                <button class="btn-login" id="loginBtn" onclick="loginAnon()">Вход</button>
             </div>
 
-            <div class="buttons-grid">
-                <button class="btn-red" onclick="makeBet('red')">На Красное (x2)</button>
-                <button class="btn-black" onclick="makeBet('black')">На Черное (x2)</button>
-            </div>
-        </div>
+            <div class="controls">
+                <div class="input-group">
+                    <label for="betAmount">Ставка (🪙):</label>
+                    <input type="number" id="betAmount" value="100" min="10" step="10">
+                </div>
 
-        <div id="statusText"></div>
+                <div class="buttons-grid">
+                    <button class="btn-red" id="btnRed" onclick="makeBet('red')">Красное</button>
+                    <button class="btn-black" id="btnBlack" onclick="makeBet('black')">Черное</button>
+                </div>
+            </div>
+
+            <div id="statusText">Войдите, чтобы начать игру</div>
+        </div>
     </div>
 
     <script>
-        // Ваши конфигурационные данные из Firebase
+        // --- КОНФИГУРАЦИЯ FIREBASE (ТВОИ ДАННЫЕ) ---
         const firebaseConfig = {
             apiKey: "AIzaSyCsd-EMW60Nmk452niquucF3wDfYkQbNlU",
             authDomain: "fcasino-64ooo.firebaseapp.com",
@@ -289,141 +242,258 @@
             measurementId: "G-DPW70MMJHJ"
         };
 
-        // Инициализация Firebase
+        // Инициализация
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
-        // Подключение analytics, если нужно
-        // const analytics = firebase.analytics();
 
-        const wheel = document.getElementById('wheel');
-        const ball = document.getElementById('ball');
+        // Элементы UI
+        const canvas = document.getElementById('rouletteCanvas');
+        const ctx = canvas.getContext('2d');
         const statusText = document.getElementById('statusText');
+        const balanceEl = document.getElementById('userBalance');
+        const btnRed = document.getElementById('btnRed');
+        const btnBlack = document.getElementById('btnBlack');
         
         let currentUser = null;
-        let balance = 1000; // Стартовый баланс до загрузки
-        let currentRotation = 0;
+        let balance = 0;
+        let isSpinning = false;
 
-        // Раскладка Европейской рулетки (37 чисел)
-        const wheelNumbers = [
-            0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10,
-            5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
-        ];
-        
-        // Список красных чисел на колесе
+        // Данные колеса
+        const wheelNumbers = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
         const reds = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
 
-        // Функция инициализации секторов колеса рулетки
-        function initWheel() {
-            const count = wheelNumbers.length;
-            const degreesPerSector = 360 / count;
-            wheel.innerHTML = ''; 
-            
-            wheelNumbers.forEach((number, index) => {
-                const sector = document.createElement('div');
-                sector.className = 'sector';
-                
-                if (number === 0) {
-                    sector.classList.add('green');
-                } else if (reds.includes(number)) {
-                    sector.classList.add('red');
-                } else {
-                    sector.classList.add('black');
+        // --- ЗАГРУЗКА ГРАФИКИ (РЕАЛИСТИКА) ---
+        const images = {};
+        let imagesLoaded = 0;
+        const totalImages = 2; // Колесо и Шарик. Фон загружается CSS.
+
+        function imageLoadedCallback() {
+            imagesLoaded++;
+            if (imagesLoaded === totalImages) {
+                requestAnimationFrame(gameLoop); // Запуск цикла отрисовки
+                statusText.innerText = "Графика загружена. Войдите в систему.";
+            }
+        }
+
+        images.wheel = new Image();
+        images.wheel.src = 'wheel_texture.png'; // Убедись, что файл в той же папке
+        images.wheel.onload = imageLoadedCallback;
+
+        images.ball = new Image();
+        images.ball.src = 'ball_texture.png'; // Убедись, что файл в той же папке
+        images.ball.onload = imageLoadedCallback;
+
+
+        // --- СОСТОЯНИЕ АНИМАЦИИ ---
+        const rouletteState = {
+            wheelAngle: 0,
+            wheelSpeed: 0,
+            ballAngle: 0, // Угол шарика относительно центра
+            ballRadius: 260, // Радиус желоба
+            ballSpeed: 0,
+            targetIndex: -1, // Куда должен упасть
+            phase: 'idle' // idle, spinning, launching_ball, ball_dropping, stopped
+        };
+
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+
+
+        // --- ОСНОВНОЙ ЦИКЛ ОТРИСОВКИ (CANVASLOOP) ---
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Очистка холста
+
+            // 1. Отрисовка тени под колесом
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 290, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.fill();
+            ctx.restore();
+
+            // 2. Логика движения колеса
+            if (rouletteState.phase !== 'idle' && rouletteState.phase !== 'stopped') {
+                rouletteState.wheelSpeed = Math.max(0.002, rouletteState.wheelSpeed * 0.998); // Плавное замедление колеса
+                rouletteState.wheelAngle += rouletteState.wheelSpeed;
+            }
+
+            // 3. Отрисовка вращающегося колеса
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(rouletteState.wheelAngle);
+            // Рисуем текстуру колеса, центрируя её
+            ctx.drawImage(images.wheel, -images.wheel.width / 2, -images.wheel.height / 2);
+            ctx.restore();
+
+            // 4. Логика и отрисовка шарика
+            drawAndManageBall();
+
+            requestAnimationFrame(gameLoop); // Рекурсивный вызов
+        }
+
+        // --- ЛОГИКА ФИЗИКИ ШАРИКА ---
+        function drawAndManageBall() {
+            if (rouletteState.phase === 'idle' || rouletteState.phase === 'stopped') return;
+
+            // Координаты шарика на основе угла и радиуса
+            const ballX = centerX + Math.cos(rouletteState.ballAngle) * rouletteState.ballRadius;
+            const ballY = centerY + Math.sin(rouletteState.ballAngle) * rouletteState.ballRadius;
+
+            // Отрисовка шарика (с тенью для объема)
+            ctx.save();
+            ctx.translate(ballX, ballY);
+            // Тень шарика
+            ctx.beginPath();
+            ctx.arc(2, 2, 8, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.fill();
+            // Текстура шарика
+            ctx.drawImage(images.ball, -8, -8, 16, 16); // Размер 16x16
+            ctx.restore();
+
+            // Физика шарика в зависимости от фазы
+            if (rouletteState.phase === 'launching_ball') {
+                // Шарик быстро летит по внешнему желобу
+                rouletteState.ballSpeed = Math.max(0.05, rouletteState.ballSpeed * 0.992);
+                rouletteState.ballAngle -= rouletteState.ballSpeed; // Шарик летит ПРОТИВ вращения колеса
+
+                // Если шарик сильно замедлился, переходим к падению
+                if (rouletteState.ballSpeed < 0.06) {
+                    rouletteState.phase = 'ball_dropping';
+                    // Рассчитываем, где шарик должен встретиться с колесом
+                    // Это сложная математика, упростим: привяжем к таргету
                 }
-                
-                sector.innerHTML = `<span>${number}</span>`;
-                const angle = index * degreesPerSector;
-                sector.style.transform = `rotate(${angle}deg) skewY(${90 - degreesPerSector}deg)`;
-                sector.style.width = '50%';
-                sector.style.height = '50%';
-                
-                wheel.appendChild(sector);
-            });
+            } 
+            else if (rouletteState.phase === 'ball_dropping') {
+                // Шарик падает внутрь (уменьшаем радиус)
+                rouletteState.ballRadius = Math.max(185, rouletteState.ballRadius - 2); // 185 - радиус ячеек
+                rouletteState.ballAngle -= rouletteState.ballSpeed;
+                rouletteState.ballSpeed *= 0.99; // Быстрое замедление
+
+                // Шарик достиг ячеек
+                if (rouletteState.ballRadius <= 185) {
+                    rouletteState.phase = 'stopped';
+                    isSpinning = false; // Разблокируем UI (реальный результат объявит setTimeout)
+                    
+                    // Фиксируем шарик относительно колеса в нужной ячейке
+                    const count = wheelNumbers.length;
+                    const degreesPerSector = (Math.PI * 2) / count;
+                    rouletteState.ballAngle = (rouletteState.targetIndex * degreesPerSector) - rouletteState.wheelAngle - Math.PI/2;
+                    rouletteState.ballRadius = 185;
+                }
+            }
         }
 
-        // Анонимная авторизация
+
+        // --- FIREBASE И ЛОГИКА ИГРЫ ---
+
+        function setButtonsState(disabled) {
+            btnRed.disabled = disabled;
+            btnBlack.disabled = disabled;
+        }
+
         function loginAnon() {
-            statusText.innerText = "Выполняется вход...";
-            auth.signInAnonymously().then(() => {
-                statusText.innerText = "Вход успешно выполнен";
-            }).catch((error) => {
-                statusText.innerText = "Ошибка входа: " + error.message;
-            });
+            statusText.innerText = "Вход...";
+            auth.signInAnonymously().catch(e => statusText.innerText = "Ошибка: " + e.message);
         }
 
-        // Слушатель статуса авторизации
-        auth.onAuthStateChanged((user) => {
+        auth.onAuthStateChanged(user => {
             if (user) {
                 currentUser = user;
-                document.getElementById('loginBtn').innerText = "ID: " + user.uid.substring(0, 6) + "...";
-                statusText.innerText = "Авторизация прошла успешно. Загрузка профиля...";
+                document.getElementById('loginBtn').innerText = "ID: " + user.uid.substring(0, 4);
                 
-                const userRef = db.collection('users').doc(user.uid);
-                userRef.get().then((doc) => {
+                db.collection('users').doc(user.uid).onSnapshot(doc => {
                     if (doc.exists) {
                         balance = doc.data().balance;
                         updateBalanceDisplay();
-                        statusText.innerText = "Баланс успешно загружен. Готовы к игре!";
+                        if (!isSpinning) statusText.innerText = "Ставки приняты.";
                     } else {
-                        // Создание нового профиля игрока в Firestore
-                        userRef.set({ balance: 1000 }).then(() => {
-                            balance = 1000;
-                            updateBalanceDisplay();
-                            statusText.innerText = "Профиль создан. Начислено 1000 🪙";
-                        });
+                        db.collection('users').doc(user.uid).set({ balance: 5000 }); // Стартовый капитал больше
                     }
-                }).catch((error) => {
-                    statusText.innerText = "Ошибка загрузки: " + error.message;
                 });
+                setButtonsState(false);
             } else {
-                document.getElementById('loginBtn').innerText = "Анонимный вход";
-                statusText.innerText = "Войдите в систему для начала игры";
+                setButtonsState(true);
             }
         });
 
-        // Функция обновления отображения баланса
         function updateBalanceDisplay() {
             let header = document.querySelector('.header');
-            if (!document.getElementById('userBalance')) {
-                const bal = document.createElement('div');
-                bal.id = 'userBalance';
-                bal.className = 'balance-box';
-                bal.innerText = `Баланс: ${balance} 🪙`;
-                header.insertBefore(bal, document.getElementById('loginBtn'));
-            } else {
-                document.getElementById('userBalance').innerText = `Баланс: ${balance} 🪙`;
+            let balEl = document.getElementById('userBalance');
+            if (!balEl) {
+                balEl = document.createElement('div');
+                balEl.id = 'userBalance';
+                balEl.className = 'balance-box';
+                header.insertBefore(balEl, document.getElementById('loginBtn'));
+            }
+            balEl.innerText = `${balance} 🪙`;
+        }
+
+        async function makeBet(betType) {
+            if (isSpinning || !currentUser) return;
+            
+            const betAmount = parseInt(document.getElementById('betAmount').value);
+            if (isNaN(betAmount) || betAmount < 10 || betAmount > balance) {
+                statusText.innerText = "Неверная ставка или мало монет!";
+                statusText.classList.add('lose');
+                return;
+            }
+            statusText.classList.remove('lose', 'win');
+
+            isSpinning = true;
+            setButtonsState(true); // Блокируем кнопки
+
+            try {
+                const userRef = db.collection('users').doc(currentUser.uid);
+                await userRef.update({ balance: balance - betAmount });
+
+                // РАССЧЕТ РЕЗУЛЬТАТА (КЛИЕНТСКИЙ - ДЛЯ ДЕМО)
+                // Для защиты в продакшене это должно быть в Cloud Functions!
+                const randomIndex = Math.floor(Math.random() * wheelNumbers.length);
+                const winningNumber = wheelNumbers[randomIndex];
+                const winningColor = (winningNumber === 0) ? 'green' : (reds.includes(winningNumber) ? 'red' : 'black');
+                
+                const isWin = (betType === winningColor);
+                const payout = isWin ? betAmount * 2 : 0;
+
+                // ЗАПУСК РЕАЛИСТИЧНОЙ АНИМАЦИИ
+                rouletteState.targetIndex = randomIndex;
+                statusText.innerText = "Ставка принята! Крутим...";
+                launchBallAnimation();
+
+                // Ожидание завершения анимации и объявление результата
+                setTimeout(async () => {
+                    if (isWin) {
+                        await userRef.update({ balance: balance + payout });
+                        statusText.innerText = `🎉 ПОБЕДА! Выпало ${winningNumber}. Вы выиграли ${payout} 🪙!`;
+                        statusText.classList.add('win');
+                    } else {
+                        statusText.innerText = `Проигрыш. Выпало ${winningNumber} (${winningColor}).`;
+                        statusText.classList.add('lose');
+                    }
+                    // Кнопки разблокируются в gameLoop, когда фаза станет 'stopped'
+                    // Но для надежности продублируем здесь
+                    setButtonsState(false);
+                    isSpinning = false;
+                }, 8500); // Анимация длится около 8 секунд
+
+            } catch (error) {
+                statusText.innerText = "Ошибка: " + error.message;
+                isSpinning = false;
+                setButtonsState(false);
             }
         }
 
-        // Функция выполнения ставки
-        async function makeBet(betType) {
-            const betAmountInput = document.getElementById('betAmount').value;
-            const betAmount = parseInt(betAmountInput);
+        // Запуск последовательности анимации
+        function launchBallAnimation() {
+            // Установка начальных скоростей
+            rouletteState.wheelSpeed = 0.04; // Колесо начинает вращаться
+            rouletteState.ballSpeed = 0.15; // Шарик быстро запускается
+            rouletteState.ballRadius = 260; // На внешний желоб
+            rouletteState.phase = 'launching_ball';
+        }
 
-            if (!currentUser) {
-                statusText.innerText = "Пожалуйста, войдите в систему!";
-                return;
-            }
-
-            if (isNaN(betAmount) || betAmount <= 0) {
-                statusText.innerText = "Укажите корректную сумму ставки";
-                return;
-            }
-
-            if (betAmount > balance) {
-                statusText.innerText = "Недостаточно средств на балансе";
-                return;
-            }
-
-            const userRef = db.collection('users').doc(currentUser.uid);
-            
-            try {
-                // Списываем ставку из баланса
-                balance -= betAmount;
-                await userRef.update({ balance: balance });
-                updateBalanceDisplay();
-                
-                statusText.innerText = "Ставка принята! Вращаем колесо...";
-
-                const randomIndex = Math.floor(Math.random() * wheelNumbers.length);
-
+    </script>
+</body>
+</html>

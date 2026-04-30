@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FCasino - Classic Deluxe</title>
+    <title>FCasino | Midnight Edition</title>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -11,248 +11,213 @@
 
     <style>
         :root {
-            --bg-color: #030d1a;
-            --accent-gold: #d4af37;
-            --accent-red: #b91c1c;
-            --accent-green: #15803d;
-            --panel-bg: rgba(15, 23, 42, 0.95);
-            --text-white: #ffffff;
-            --text-gray: #94a3b8;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+            --deep-blue: #020617;
+            --neon-gold: #fbbf24;
+            --neon-blue: #38bdf8;
+            --glass-bg: rgba(15, 23, 42, 0.8);
+            --border-glow: 0 0 15px rgba(251, 191, 36, 0.3);
         }
 
         body {
-            background-color: var(--bg-color);
-            background-image: radial-gradient(circle at 10% 20%, rgba(30, 58, 138, 0.4) 0%, transparent 40%),
-                              radial-gradient(circle at 90% 80%, rgba(185, 28, 28, 0.2) 0%, transparent 40%);
-            color: var(--text-white);
-            font-family: 'Georgia', serif;
-            min-height: 100vh;
+            background-color: var(--deep-blue);
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 50% 100%, rgba(251, 191, 36, 0.1) 0%, transparent 50%);
+            color: #f8fafc;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            padding: 20px;
-            overflow-x: hidden;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .main-frame {
+            background: var(--glass-bg);
+            border: 2px solid var(--neon-gold);
+            border-radius: 24px;
+            padding: 40px;
+            width: 500px;
+            box-shadow: var(--border-glow), 0 20px 50px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            text-align: center;
         }
 
         .header {
-            width: 100%;
-            max-width: 600px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px;
-            background: var(--panel-bg);
-            border: 2px solid var(--accent-gold);
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
+            margin-bottom: 30px;
         }
 
-        .header h1 {
-            color: var(--accent-gold);
-            font-size: 2rem;
-            letter-spacing: 3px;
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--neon-gold);
             text-transform: uppercase;
-            text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.8);
+            letter-spacing: 4px;
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
         }
 
-        .panel {
-            width: 100%;
-            max-width: 600px;
-            background: var(--panel-bg);
-            border: 2px solid var(--accent-gold);
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9);
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
+        .balance-tag {
+            background: rgba(0,0,0,0.4);
+            padding: 8px 15px;
+            border-radius: 12px;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            font-weight: bold;
         }
 
-        .slots-container {
+        /* Система барабанов */
+        .slot-machine {
             display: flex;
             justify-content: center;
-            gap: 20px;
-            margin: 20px 0;
+            gap: 15px;
+            background: #000;
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid #1e293b;
+            margin-bottom: 30px;
+            overflow: hidden;
+            height: 140px;
+            position: relative;
         }
 
-        .slot-reel {
+        .slot-machine::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(180deg, 
+                rgba(0,0,0,0.8) 0%, 
+                transparent 20%, 
+                transparent 80%, 
+                rgba(0,0,0,0.8) 100%);
+            pointer-events: none;
+        }
+
+        .reel {
             width: 100px;
-            height: 120px;
-            background: linear-gradient(180deg, #1e293b, #0f172a);
-            border: 3px solid var(--accent-gold);
-            border-radius: 10px;
+            height: 100%;
+            position: relative;
+            will-change: transform;
+        }
+
+        .reel-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 3s cubic-bezier(0.15, 0, 0.15, 1);
+        }
+
+        .symbol {
+            height: 100px;
+            width: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3.5rem;
-            color: var(--accent-gold);
-            text-shadow: 0 0 10px var(--accent-gold);
-            box-shadow: inset 0 4px 10px rgba(0,0,0,0.8);
-            transition: transform 0.3s ease;
+            font-size: 3rem;
+            flex-shrink: 0;
+            text-shadow: 0 0 10px rgba(255,255,255,0.2);
         }
 
-        .spin-animation {
-            animation: spin 0.4s infinite alternate;
+        .symbol.win-glow {
+            animation: glow 0.5s ease-in-out infinite alternate;
         }
 
-        @keyframes spin {
-            0% { transform: translateY(-3px); }
-            100% { transform: translateY(3px); }
+        @keyframes glow {
+            from { text-shadow: 0 0 5px #fff; transform: scale(1); }
+            to { text-shadow: 0 0 20px var(--neon-gold); transform: scale(1.1); }
         }
 
+        /* Управление */
         .controls {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+            display: grid;
+            gap: 20px;
         }
 
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+        .bet-input-wrapper {
+            position: relative;
         }
 
-        .input-group label {
-            font-size: 0.9rem;
-            color: var(--accent-gold);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .input-group input {
+        input {
             width: 100%;
-            padding: 12px;
-            background: #0b1321;
-            border: 1px solid var(--accent-gold);
-            border-radius: 6px;
-            color: var(--accent-gold);
-            font-size: 1.3rem;
-            font-weight: bold;
+            background: #0f172a;
+            border: 1px solid #334155;
+            padding: 15px;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1.2rem;
             text-align: center;
             outline: none;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+            transition: border 0.3s;
         }
 
-        .buttons-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
+        input:focus {
+            border-color: var(--neon-blue);
         }
 
-        button {
-            padding: 14px;
-            background: linear-gradient(135deg, var(--accent-gold), #9a7d11);
-            color: #0b1321;
+        .btn-spin {
+            background: linear-gradient(135deg, #fbbf24, #d97706);
+            color: #000;
             border: none;
-            border-radius: 6px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 1.3rem;
+            font-weight: 800;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-            transition: all 0.2s ease;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(217, 119, 6, 0.4);
+            transition: all 0.2s;
         }
 
-        button:hover:not(:disabled) {
+        .btn-spin:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(212, 175, 55, 0.4);
+            box-shadow: 0 6px 20px rgba(217, 119, 6, 0.6);
         }
 
-        button:disabled {
+        .btn-spin:active {
+            transform: translateY(1px);
+        }
+
+        .btn-spin:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
+            filter: grayscale(1);
         }
 
-        .btn-secondary {
-            background: linear-gradient(135deg, var(--accent-red), #7f1d1d);
-            color: #ffffff;
-        }
-
-        #statusText {
-            font-size: 1rem;
-            text-align: center;
-            min-height: 30px;
-            line-height: 1.5;
-            color: var(--text-gray);
-        }
-
-        .win {
-            color: #22c55e !important;
+        #status {
+            margin-top: 20px;
             font-weight: bold;
+            height: 24px;
         }
 
-        .lose {
-            color: #ef4444 !important;
-        }
-
-        .balance-box {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: var(--accent-gold);
-            background: rgba(15, 23, 42, 0.8);
-            padding: 8px 16px;
-            border-radius: 6px;
-            border: 1px solid var(--accent-gold);
-        }
-
-        /* Элементы классического стиля */
-        .cards-dice {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-top: 1px solid rgba(212, 175, 55, 0.2);
-            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
-        }
-
-        .cd-item {
-            font-size: 1.5rem;
-            color: var(--accent-gold);
-        }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>FCasino</h1>
-        <div id="balanceBox" class="balance-box">Баланс: 0 🪙</div>
-    </div>
-
-    <div class="panel">
-        <div class="cards-dice">
-            <span class="cd-item">🂡 🃞 🃚</span>
-            <span class="cd-item">🎲 🎲</span>
+    <div class="main-frame">
+        <div class="header">
+            <div class="logo">FCasino</div>
+            <div id="balance" class="balance-tag">Баланс: 0 🪙</div>
         </div>
 
-        <div class="slots-container">
-            <div class="slot-reel" id="reel1">7</div>
-            <div class="slot-reel" id="reel2">7</div>
-            <div class="slot-reel" id="reel3">7</div>
+        <div class="slot-machine">
+            <div class="reel"><div id="reel1" class="reel-container"></div></div>
+            <div class="reel"><div id="reel2" class="reel-container"></div></div>
+            <div class="reel"><div id="reel3" class="reel-container"></div></div>
         </div>
 
         <div class="controls">
-            <div class="input-group">
-                <label for="betAmount">Ставка</label>
-                <input type="number" id="betAmount" value="50" min="10" step="10">
+            <div class="bet-input-wrapper">
+                <input type="number" id="betAmount" value="100" placeholder="Ваша ставка">
             </div>
-            <div class="buttons-grid">
-                <button id="spinBtn" onclick="playSlots()">Вращать</button>
-                <button class="btn-secondary" id="loginBtn" onclick="loginAnon()">Вход</button>
-            </div>
+            <button id="spinBtn" class="btn-spin" onclick="spin()">Вращать!</button>
         </div>
 
-        <div id="statusText">Инициализация...</div>
+        <div id="status">Загрузка данных...</div>
     </div>
 
     <script>
@@ -262,132 +227,133 @@
             projectId: "fcasino-64ooo",
             storageBucket: "fcasino-64ooo.firebasestorage.app",
             messagingSenderId: "649497478758",
-            appId: "1:649497478758:web:be8656c2ce88d61d438fa7",
-            measurementId: "G-DPW70MMJHJ"
+            appId: "1:649497478758:web:be8656c2ce88d61d438fa7"
         };
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        let currentUser = null;
+        const SYMBOLS = ['💎', '🎰', '🔔', '🍒', '7️⃣', '🍋', '⭐'];
         let balance = 0;
         let isSpinning = false;
 
-        const symbols = ['7', 'BAR', '🍒', '🍋', '🔔'];
-
-        function updateDisplay() {
-            document.getElementById('balanceBox').innerText = `Баланс: ${balance} 🪙`;
+        // Генерация барабанов для анимации
+        function createReelItems(reelId) {
+            const reel = document.getElementById(reelId);
+            reel.innerHTML = '';
+            // Создаем длинную ленту для прокрутки
+            for (let i = 0; i < 40; i++) {
+                const div = document.createElement('div');
+                div.className = 'symbol';
+                div.innerHTML = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+                reel.appendChild(div);
+            }
         }
 
-        function loginAnon() {
-            const status = document.getElementById('statusText');
-            status.innerText = "Вход...";
-            status.className = "";
-            auth.signInAnonymously().catch((e) => {
-                status.innerText = "Ошибка: " + e.message;
-                status.className = "lose";
-            });
-        }
+        // Первоначальная настройка
+        ['reel1', 'reel2', 'reel3'].forEach(createReelItems);
 
-        auth.onAuthStateChanged((user) => {
+        auth.signInAnonymously();
+
+        auth.onAuthStateChanged(user => {
             if (user) {
-                currentUser = user;
-                document.getElementById('loginBtn').innerText = "ID: " + user.uid.substring(0, 4);
-                
                 const userRef = db.collection('users').doc(user.uid);
-                
-                userRef.onSnapshot((doc) => {
+                userRef.onSnapshot(doc => {
                     if (doc.exists) {
                         balance = doc.data().balance;
-                        updateDisplay();
-                        document.getElementById('statusText').innerText = "Готовы к игре!";
-                        document.getElementById('statusText').className = "";
+                        document.getElementById('balance').innerText = `Баланс: ${balance} 🪙`;
+                        document.getElementById('status').innerText = "Удачи!";
                     } else {
-                        userRef.set({ balance: 5000 });
+                        userRef.set({ balance: 1000 });
                     }
                 });
-            } else {
-                document.getElementById('loginBtn').innerText = "Вход";
-                document.getElementById('statusText').innerText = "Войдите в систему для игры";
-                document.getElementById('statusText').className = "";
-                balance = 0;
-                updateDisplay();
             }
         });
 
-        async function playSlots() {
-            if (isSpinning || !currentUser) return;
-            const betInput = parseInt(document.getElementById('betAmount').value);
+        async function spin() {
+            if (isSpinning) return;
+            
+            const bet = parseInt(document.getElementById('betAmount').value);
+            const status = document.getElementById('status');
+            const btn = document.getElementById('spinBtn');
 
-            if (isNaN(betInput) || betInput <= 0) {
-                document.getElementById('statusText').innerText = "Введите корректную ставку!";
-                document.getElementById('statusText').className = "lose";
-                return;
-            }
-
-            if (betInput > balance) {
-                document.getElementById('statusText').innerText = "Недостаточно средств!";
-                document.getElementById('statusText').className = "lose";
+            if (bet > balance || bet <= 0) {
+                status.innerText = "Ошибка ставки!";
+                status.className = "error";
                 return;
             }
 
             isSpinning = true;
-            const statusText = document.getElementById('statusText');
-            statusText.innerText = "Вращаем барабаны...";
-            statusText.className = "";
+            btn.disabled = true;
+            status.innerText = "Вращаем...";
+            status.className = "";
 
-            // Запускаем полную анимацию
-            const reel1 = document.getElementById('reel1');
-            const reel2 = document.getElementById('reel2');
-            const reel3 = document.getElementById('reel3');
+            // Списываем баланс
+            await db.collection('users').doc(auth.currentUser.uid).update({
+                balance: firebase.firestore.FieldValue.increment(-bet)
+            });
 
-            reel1.classList.add('spin-animation');
-            reel2.classList.add('spin-animation');
-            reel3.classList.add('spin-animation');
+            const results = [];
+            const reels = ['reel1', 'reel2', 'reel3'];
 
-            // Списываем баланс в базе данных
-            const userRef = db.collection('users').doc(currentUser.uid);
-            await userRef.update({ balance: balance - betInput });
+            reels.forEach((id, index) => {
+                const container = document.getElementById(id);
+                // Случайный символ в конце ленты
+                const resultIndex = Math.floor(Math.random() * SYMBOLS.length);
+                const resultSymbol = SYMBOLS[resultIndex];
+                results.push(resultSymbol);
 
-            setTimeout(() => {
-                // Останавливаем анимацию
-                reel1.classList.remove('spin-animation');
-                reel2.classList.remove('spin-animation');
-                reel3.classList.remove('spin-animation');
+                // Ставим результат в последнюю ячейку прокрутки
+                container.children[container.children.length - 2].innerHTML = resultSymbol;
+                
+                // Запускаем смещение
+                const offset = (container.children.length - 2) * 100;
+                container.style.transition = `transform ${2 + index * 0.5}s cubic-bezier(0.45, 0.05, 0.55, 0.95)`;
+                container.style.transform = `translateY(-${offset}px)`;
+            });
 
-                // Генерация результата
-                const res1 = symbols[Math.floor(Math.random() * symbols.length)];
-                const res2 = symbols[Math.floor(Math.random() * symbols.length)];
-                const res3 = symbols[Math.floor(Math.random() * symbols.length)];
-
-                reel1.innerText = res1;
-                reel2.innerText = res2;
-                reel3.innerText = res3;
-
-                // Расчет выигрыша
-                let winAmount = 0;
-                if (res1 === res2 && res2 === res3) {
-                    if (res1 === '7') {
-                        winAmount = betInput * 10;
-                    } else if (res1 === 'BAR') {
-                        winAmount = betInput * 5;
-                    } else {
-                        winAmount = betInput * 3;
-                    }
+            setTimeout(async () => {
+                // Проверка выигрыша
+                let winMultiplier = 0;
+                if (results[0] === results[1] && results[1] === results[2]) {
+                    winMultiplier = 5;
+                    if (results[0] === '7️⃣') winMultiplier = 10;
+                    if (results[0] === '💎') winMultiplier = 20;
+                } else if (results[0] === results[1] || results[1] === results[2]) {
+                    winMultiplier = 2;
                 }
 
-                if (winAmount > 0) {
-                    userRef.update({ balance: balance - betInput + winAmount });
-                    statusText.innerText = `ПОБЕДА! Выигрыш: +${winAmount} 🪙`;
-                    statusText.className = "win";
+                if (winMultiplier > 0) {
+                    const winTotal = bet * winMultiplier;
+                    await db.collection('users').doc(auth.currentUser.uid).update({
+                        balance: firebase.firestore.FieldValue.increment(winTotal)
+                    });
+                    status.innerText = `ПОБЕДА! +${winTotal}`;
+                    status.className = "success";
                 } else {
-                    statusText.innerText = `Проигрыш. Попробуйте еще раз!`;
-                    statusText.className = "lose";
+                    status.innerText = "Повезет в следующий раз!";
+                    status.className = "";
                 }
 
-                isSpinning = false;
-            }, 2500); // 2.5 секунды анимации
+                // Сброс позиций для следующего раза без анимации
+                setTimeout(() => {
+                    reels.forEach(id => {
+                        const container = document.getElementById(id);
+                        container.style.transition = 'none';
+                        container.style.transform = 'translateY(0)';
+                        // Перемешиваем символы для свежести
+                        Array.from(container.children).forEach(child => {
+                            child.innerHTML = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+                        });
+                        // Возвращаем результат в начало
+                        container.children[0].innerHTML = results[reels.indexOf(id)];
+                    });
+                    isSpinning = false;
+                    btn.disabled = false;
+                }, 500);
+
+            }, 3500);
         }
     </script>
 </body>
